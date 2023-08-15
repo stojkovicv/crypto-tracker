@@ -1,0 +1,15 @@
+{
+  "name": "crypto-tracker",
+  "version": "1.0.0",
+  "description": "Quick and effective Discord bot meant to keep track of crypto data within specific time range, providing several analytical functionalities.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^14.12.1"
+  }
+}
