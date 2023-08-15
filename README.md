@@ -1,2 +1,5 @@
-# crypto-tracker
-Quick and effective Discord bot meant to keep track of crypto data within specific time range, providing several analytical functionalities.
+# Crypto tracking Discord bot
+
+This project represents independetly driven project around Discord services to fetch latest information about most valuable crypto currencies. It's planned to providing several analytical functionalities in order to achieve better insight.
+
+## Work in progres!
