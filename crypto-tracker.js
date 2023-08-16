@@ -28,10 +28,13 @@ client.login(token);
 
 async function getBitcoinPrice() {
     try {
-        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=eur');
+        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=eur,usd');
         const data = await response.json();
         console.log("Fetched Bitcoin price:", data.bitcoin.eur);
-        return data.bitcoin.eur;
+        return {
+            eur: data.bitcoin.eur,
+            usd: data.bitcoin.usd
+        };
     } catch (error) {
         console.error("Error fetching Bitcoin price:", error);
         throw new FetchError(FETCH_ERROR);
@@ -62,8 +65,8 @@ client.on('messageCreate', async message => {
 
     if (message.content === '!bitcoin') {
         try {
-            const price = await getBitcoinPrice();
-            message.channel.send(`The current price of Bitcoin is €${price}`);
+            const prices = await getBitcoinPrice();
+            message.channel.send(`The current price of Bitcoin is €${prices.eur} which is $${prices.usd} USD.`);
         } catch (error) {
             if (error instanceof FetchError) {
                 message.channel.send(error.message);
