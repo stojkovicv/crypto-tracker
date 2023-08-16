@@ -25,15 +25,27 @@ client.once(Events.ClientReady, c => {
 const token = process.env.BOT_TOKEN;
 client.login(token);
 
-// Fetching Bitcoin price
+
 async function getBitcoinPrice() {
     try {
-        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
+        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=eur');
         const data = await response.json();
-        console.log("Fetched Bitcoin price:", data.bitcoin.usd);
-        return data.bitcoin.usd;
+        console.log("Fetched Bitcoin price:", data.bitcoin.eur);
+        return data.bitcoin.eur;
     } catch (error) {
         console.error("Error fetching Bitcoin price:", error);
+        throw new FetchError(FETCH_ERROR);
+    }
+}
+
+async function getEthereumPrice(){
+    try{
+        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=eur');
+        const data = await response.json();
+        console.log("Fetched Ethereum price:", data.ethereum.eur);
+        return data.ethereum.eur;
+    } catch (error) {
+        console.error("Error fetching Ethereum price:", error);
         throw new FetchError(FETCH_ERROR);
     }
 }
@@ -51,7 +63,20 @@ client.on('messageCreate', async message => {
     if (message.content === '!bitcoin') {
         try {
             const price = await getBitcoinPrice();
-            message.channel.send(`The current price of Bitcoin is $${price}`);
+            message.channel.send(`The current price of Bitcoin is €${price}`);
+        } catch (error) {
+            if (error instanceof FetchError) {
+                message.channel.send(error.message);
+            } else {
+                message.channel.send('An unexpected error occurred.');
+            }
+        }
+    }
+
+    if(message.content === '!ethereum'){
+        try{
+            const price = await getEthereumPrice();
+            message.channel.send(`The current price of Ethereum is €${price}`);
         } catch (error) {
             if (error instanceof FetchError) {
                 message.channel.send(error.message);
