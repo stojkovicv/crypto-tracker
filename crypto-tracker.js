@@ -41,6 +41,59 @@ async function getBitcoinPrice() {
     }
 }
 
+async function fetchBitcoinPastPrices(number_of_days) {
+    try {
+        const response = await fetch(`https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=${number_of_days}&interval=daily`);
+        const data = await response.json();
+        console.log("Fetched Bitcoin past prices:", data.prices);
+        return data.prices;
+    } catch (error) {
+        console.error("Error fetching Bitcoin past prices:", error);
+        throw new FetchError(FETCH_ERROR);
+    }
+}
+
+
+async function generateQuickChartUrl(labels, data, number_of_days) {
+    const chartConfig = {
+        type: 'line',
+        data: {
+            labels: labels.map(date => {
+                const d = new Date(date);
+                return `${d.getDate()}.${d.toLocaleString('default', { month: 'short' })}.${d.getFullYear()}`;
+            }),
+            datasets: [{
+                label: 'Bitcoin Price (EUR)',
+                data: data,
+                fill: false,
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1,
+                yAxisID: 'y-axis-eur'
+            }]
+        },
+        options: {
+            title: {
+                display: true,
+                text: `Bitcoin price in past ${number_of_days} days`
+            },
+            scales: {
+                yAxes: [{
+                    id: 'y-axis-eur',
+                    ticks: {
+                        callback: function(value, index, values) {
+                            return '€' + value;
+                        }
+                    }
+                }]
+            }
+        }
+    };
+
+    const encodedConfig = encodeURIComponent(JSON.stringify(chartConfig));
+    return `https://quickchart.io/chart?c=${encodedConfig}`;
+}
+
+
 async function getEthereumPrice(){
     try{
         const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=eur,usd');
@@ -60,8 +113,6 @@ client.on('messageCreate', async message => {
 
     console.log(`Received message from ${message.author.tag} in ${message.guild ? message.guild.name : 'DM'}:`);
     console.log(`Content: ${message.content}`);
-    console.log(`Embeds: ${JSON.stringify(message.embeds)}`);
-    console.log(`Attachments: ${JSON.stringify(message.attachments)}`);
 
     // Ignore messages from bots
     if (message.author.bot) return;
@@ -76,6 +127,17 @@ client.on('messageCreate', async message => {
             } else {
                 message.channel.send('An unexpected error occurred.');
             }
+        }
+    }
+
+    if (message.content.startsWith('!bitcoin')) {
+        const number_of_days = parseInt(message.content.split(' ')[1]);
+        if (number_of_days && number_of_days <= 30) {
+            const data = await fetchBitcoinPastPrices(number_of_days);
+            const dates = data.map(item => new Date(item[0]).toLocaleDateString());
+            const prices = data.map(item => item[1]);
+            const chartUrl = await generateQuickChartUrl(dates, prices, number_of_days);
+            message.channel.send(chartUrl);
         }
     }
 
