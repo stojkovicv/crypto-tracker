@@ -7,11 +7,9 @@ const { FETCH_ERROR } = require('./errorMessages');
 let fetch;
 import('node-fetch').then(module => {
     fetch = module.default;
-    console.log("node-fetch imported successfully");
 });
 
 // Discord client initializaion
-
 const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.DirectMessages, GatewayIntentBits.MessageContent]
 });
@@ -41,34 +39,35 @@ async function getBitcoinPrice() {
     }
 }
 
-async function fetchBitcoinPastPrices(number_of_days) {
+async function fetchBitcoinPastPrices(number_of_days, currency = 'usd') {
     try {
-        const response = await fetch(`https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=${number_of_days}&interval=daily`);
+        const response = await fetch(`https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=${currency}&days=${number_of_days}&interval=daily`);
         const data = await response.json();
-        console.log("Fetched Bitcoin past prices:", data.prices);
+        console.log(`Fetched Bitcoin past prices in ${currency.toUpperCase()}:`, data.prices);
         return data.prices;
     } catch (error) {
-        console.error("Error fetching Bitcoin past prices:", error);
+        console.error(`Error fetching Bitcoin past prices in ${currency.toUpperCase()}:`, error);
         throw new FetchError(FETCH_ERROR);
     }
 }
 
-
-async function generateQuickChartUrl(labels, data, number_of_days) {
+async function generateQuickChartUrl(labels, data, number_of_days, currency = 'usd') {
+    const currencySymbol = currency === 'usd' ? '$' : '€';
     const chartConfig = {
         type: 'line',
         data: {
             labels: labels.map(date => {
                 const d = new Date(date);
-                return `${d.getDate()}.${d.toLocaleString('default', { month: 'short' })}.${d.getFullYear()}`;
+                const twoDigitYear = d.getFullYear().toString().slice(-2);
+                return `${d.getDate()}.${d.toLocaleString('default', { month: 'short' })}.${twoDigitYear}`;
             }),
             datasets: [{
-                label: 'Bitcoin Price (EUR)',
+                label: `Bitcoin Price (${currency.toUpperCase()})`,
                 data: data,
                 fill: false,
                 borderColor: 'rgb(75, 192, 192)',
                 tension: 0.1,
-                yAxisID: 'y-axis-eur'
+                yAxisID: `y-axis-${currency}`
             }]
         },
         options: {
@@ -78,10 +77,10 @@ async function generateQuickChartUrl(labels, data, number_of_days) {
             },
             scales: {
                 yAxes: [{
-                    id: 'y-axis-eur',
+                    id: `y-axis-${currency}`,
                     ticks: {
                         callback: function(value, index, values) {
-                            return '€' + value;
+                            return currencySymbol + value;
                         }
                     }
                 }]
@@ -131,12 +130,15 @@ client.on('messageCreate', async message => {
     }
 
     if (message.content.startsWith('!bitcoin')) {
-        const number_of_days = parseInt(message.content.split(' ')[1]);
+        const splitMessage = message.content.split(' ');
+        const number_of_days = parseInt(splitMessage[1]);
+        const currency = splitMessage[2] || 'usd';  // Default to USD
+    
         if (number_of_days && number_of_days <= 30) {
-            const data = await fetchBitcoinPastPrices(number_of_days);
+            const data = await fetchBitcoinPastPrices(number_of_days, currency);
             const dates = data.map(item => new Date(item[0]).toLocaleDateString());
             const prices = data.map(item => item[1]);
-            const chartUrl = await generateQuickChartUrl(dates, prices, number_of_days);
+            const chartUrl = await generateQuickChartUrl(dates, prices, number_of_days, currency);
             message.channel.send(chartUrl);
         }
     }
