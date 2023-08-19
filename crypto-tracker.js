@@ -116,7 +116,7 @@ client.on('messageCreate', async message => {
     // Ignore messages from bots
     if (message.author.bot) return;
 
-    if (message.content === '!bitcoin') {
+    else if (message.content === '!bitcoin') {
         try {
             const prices = await getBitcoinPrice();
             message.channel.send(`The current price of Bitcoin is €${prices.eur} which is $${prices.usd} USD.`);
@@ -129,10 +129,22 @@ client.on('messageCreate', async message => {
         }
     }
 
-    if (message.content.startsWith('!bitcoin')) {
+    else if (message.content.startsWith('!bitcoin ')) {
         const splitMessage = message.content.split(' ');
         const number_of_days = parseInt(splitMessage[1]);
-        const currency = splitMessage[2] || 'usd';  // Default to USD
+        const currency = splitMessage[2] || 'usd';  // USD by default
+
+        if (number_of_days > 30) {
+            return message.channel.send("Maximum insight of historical data is within range of 30 days");
+        }
+        if (number_of_days < 1) {
+            return message.channel.send("Please enter the valid number of previous days");
+        }
+
+        // Check if the command has extra parameters
+        if (splitMessage.length > 3) {
+            return message.channel.send("Sorry, I don't recognize that command, try once again");
+        }
     
         if (number_of_days && number_of_days <= 30) {
             const data = await fetchBitcoinPastPrices(number_of_days, currency);
@@ -143,7 +155,7 @@ client.on('messageCreate', async message => {
         }
     }
 
-    if(message.content === '!ethereum'){
+    else if(message.content === '!ethereum'){
         try{
             const prices = await getEthereumPrice();
             message.channel.send(`The current price of Ethereum is €${prices.eur} which is $${prices.usd} USD.`);
@@ -156,17 +168,8 @@ client.on('messageCreate', async message => {
         }
     }
 
-    if (!message.guild) {
-        console.log(`Received DM from ${message.author.tag}: ${message.content}`);
-        try {
-            const price = await getBitcoinPrice();
-            message.channel.send(`The current price of Bitcoin is $${price}`);
-        } catch (error) {
-            if (error instanceof FetchError) {
-                message.channel.send(error.message);
-            } else {
-                message.channel.send('An unexpected error occurred.');
-            }
-        }
+    else {
+        message.channel.send("Sorry, I don't recognize that command, try once again");
     }
+
 });
