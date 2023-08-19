@@ -138,7 +138,7 @@ client.on('messageCreate', async message => {
             return message.channel.send("Maximum insight of historical data is within range of 30 days");
         }
         if (number_of_days < 1) {
-            return message.channel.send("Please enter the valid number of previous days");
+            return message.channel.send("Please enter the valid number of previous days.");
         }
 
         // Check if the command has extra parameters
