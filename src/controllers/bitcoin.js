@@ -22,7 +22,7 @@ async function getBitcoinPrice() {
     }
 }
 
-async function fetchBitcoinPastPrices(number_of_days, currency = 'usd') {
+async function fetchBitcoinPastValues(number_of_days, currency = 'usd') {
     try {
         const response = await fetch(`https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=${currency}&days=${number_of_days}&interval=daily`);
         const data = await response.json();
@@ -77,6 +77,6 @@ async function generateQuickChartUrl(labels, data, number_of_days, currency = 'u
 
 module.exports = {
     getBitcoinPrice,
-    fetchBitcoinPastPrices,
-    generateQuickChartUrl
+    fetchBitcoinPastValues,
+    generateQuickChartUrl,
 };
