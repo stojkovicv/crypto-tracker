@@ -11,7 +11,6 @@ async function getBitcoinPrice() {
     try {
         const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=eur,usd');
         const data = await response.json();
-        console.log("Fetched Bitcoin price:", data.bitcoin.eur);
         return {
             eur: data.bitcoin.eur,
             usd: data.bitcoin.usd
@@ -26,6 +25,9 @@ async function fetchBitcoinPastValues(number_of_days, currency = 'usd') {
     try {
         const response = await fetch(`https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=${currency}&days=${number_of_days}&interval=daily`);
         const data = await response.json();
+        if (!data.prices) {
+            throw new FetchError(`Invalid currency: ${currency.toUpperCase()}`);
+        }
         console.log(`Fetched Bitcoin past prices in ${currency.toUpperCase()}:`, data.prices);
         return data.prices;
     } catch (error) {

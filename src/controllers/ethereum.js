@@ -12,6 +12,7 @@ async function getEthereumPrice(){
     try{
         const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=eur,usd');
         const data = await response.json();
+        console.log(data); 
         console.log("Fetched Ethereum price:", data.ethereum.eur);
         return {
             eur: data.ethereum.eur,
@@ -23,10 +24,13 @@ async function getEthereumPrice(){
     }
 }
 
-async function fetchEthehereumPastValues(number_of_days, currency = 'usd'){
+async function fetchEthereumPastValues(number_of_days, currency = 'usd'){
     try{
         const response = await fetch(`https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=${currency}&days=${number_of_days}&interval=daily`);
         const data = await response.json();
+        if (!data.prices) {
+            throw new FetchError(`Invalid currency: ${currency.toUpperCase()}`);
+        }
         console.log(`Fetched Ethereum past prices in ${currency.toUpperCase()}:`, data.prices);
         return data.prices;
     } catch (error) {
@@ -78,6 +82,6 @@ async function generateQuickChartUrlEthereum(labels, data, number_of_days, curre
 
 module.exports = {
     getEthereumPrice,
-    fetchEthehereumPastValues,
+    fetchEthereumPastValues,
     generateQuickChartUrlEthereum,
 };
