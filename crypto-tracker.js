@@ -10,22 +10,26 @@ import('node-fetch').then(module => {
     fetch = module.default;
 });
 
-// Discord client initializaion
-const client = new Client({
-    intents: [GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.DirectMessages,
-        GatewayIntentBits.MessageContent]
-});
-
 require('dotenv').config();
 
-client.once(Events.ClientReady, c => {
-    console.log(`Logged in as ${c.user.tag}`);
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.DirectMessages,
+        GatewayIntentBits.MessageContent
+    ]
 });
 
-const token = process.env.BOT_TOKEN;
-client.login(token);
+if (process.env.NODE_ENV !== 'test') {
+    client.once(Events.ClientReady, c => {
+        console.log(`Logged in as ${c.user.tag}`);
+    });
+
+    const token = process.env.BOT_TOKEN;
+    client.login(token);
+}
+
 
 function validateBitcoinMessage(message) {
     const splitMessage = message.content.split(' ');
@@ -143,3 +147,8 @@ client.on('messageCreate', async message => {
         }
     }
 });
+
+module.exports = {
+    validateBitcoinMessage,
+    validateEthereumMessage
+};
