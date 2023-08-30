@@ -41,7 +41,7 @@ describe('Bot Message Handlers', () => {
 
   test('validateBitcoinMessage with unrecognized command', () => {
     const message = {
-      content: '!bitcoin'
+      content: '!bitcoins'
     };
     expect(() => {
       validateBitcoinMessage(message);
@@ -67,6 +67,50 @@ describe('Bot Message Handlers', () => {
   });
 
   // Ethereum Validation Tests
-  // ... (similar to the Bitcoin tests)
 
+  test('validateEthereumMessage with valid input', () => {
+    const message = {
+      content: '!ethereum 10 usd'
+    };
+    const result = validateEthereumMessage(message);
+    expect(result).toEqual(['!ethereum', '10', 'usd']);
+  });
+
+  test('validateEthereumMessage with too many days', () => {
+    const message = {
+      content: '!ethereum 100 usd'
+    };
+    expect(() => {
+      validateEthereumMessage(message);
+    }).toThrow(InvalidDaysError);
+  });
+
+  test('validateEthereumMessage with unrecognized command', () => {
+    const message = {
+      content: '!ethereums'
+    };
+    expect(() => {
+      validateEthereumMessage(message);
+    }).toThrow(UnrecognizedCommandError);
+  });
+
+  test('validateEthereumMessage with too many arguments', () => {
+    const message = {
+      content: '!ethereum 10 usd invalid'
+    };
+    expect(() => {
+      validateEthereumMessage(message);
+    }).toThrow(MessageOverflow);
+  });
+
+  test('validateEthereumMessage with invalid currency', () => {
+    const message = {
+      content: '!ethereum 10 invalid'
+    };
+    expect(() => {
+      validateEthereumMessage(message);
+    }).toThrow(UnrecognizedCommandError);
+  });
+
+  
 });

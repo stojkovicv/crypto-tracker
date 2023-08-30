@@ -32,12 +32,13 @@ if (process.env.NODE_ENV !== 'test') {
 
 
 function validateBitcoinMessage(message) {
+
     const splitMessage = message.content.split(' ');
     const number_of_days = parseInt(splitMessage[1]);
     const validCurrencies = ['usd', 'eur', 'USD', 'EUR'];
 
 
-    if (!message.content.startsWith('!bitcoin')) {
+    if (!message.content.startsWith('!bitcoin ')) {
         throw new UnrecognizedCommandError("Sorry, I don't recognize that command, try once again");
     }
 
@@ -67,7 +68,7 @@ function validateEthereumMessage(message) {
     const number_of_days = parseInt(splitMessage[1]);
     const validCurrencies = ['usd', 'eur', 'USD', 'EUR'];
 
-    if (!message.content.startsWith('!ethereum')) {
+    if (!message.content.startsWith('!ethereum ')) {
         throw new UnrecognizedCommandError("Sorry, I don't recognize that command, try once again");
     }
 
