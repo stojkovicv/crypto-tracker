@@ -1,6 +1,6 @@
 
 const {Client, Events, GatewayIntentBits} = require('discord.js');
-const { getBitcoinPrice, fetchBitcoinPastValues, generateQuickChartUrl } = require('./src/controllers/bitcoin');
+const { getBitcoinPrice, fetchBitcoinPastValues, generateQuickChartUrl, startBitcoinPriceAlert } = require('./src/controllers/bitcoin');
 const { getEthereumPrice, fetchEthereumPastValues, generateQuickChartUrlEthereum } = require('./src/controllers/ethereum');
 const { FetchError, InvalidDaysError, UnrecognizedCommandError, MessageOverflow } = require('./src/errors/Errors');
 
@@ -37,6 +37,16 @@ function validateBitcoinMessage(message) {
     const number_of_days = parseInt(splitMessage[1]);
     const validCurrencies = ['usd', 'eur', 'USD', 'EUR'];
 
+    if (message.content.startsWith('!bitcoin alert ')) {
+        const lowerBound = parseFloat(splitMessage[2]);
+        const upperBound = parseFloat(splitMessage[3]);
+
+        if (isNaN(lowerBound) || isNaN(upperBound)) {
+            throw new UnrecognizedCommandError("Please add boundary prices for alert.");
+        }
+        
+        return splitMessage;
+    }
 
     if (!message.content.startsWith('!bitcoin ')) {
         throw new UnrecognizedCommandError("Sorry, I don't recognize that command, try once again");
@@ -104,6 +114,26 @@ client.on('messageCreate', async message => {
         if (message.content === '!bitcoin') {
             const prices = await getBitcoinPrice();
             message.channel.send(`The current price of Bitcoin is €${prices.eur} which is $${prices.usd} USD.`);
+        }
+
+        else if (message.content.startsWith('!bitcoin alert ')) {
+            const splitMessage = validateBitcoinMessage(message);
+            const lowerBound = parseFloat(splitMessage[2]);
+            const upperBound = parseFloat(splitMessage[3]);
+            if (lowerBound && upperBound) {
+                message.channel.send('Bitcoin price detecting started');
+        
+                startBitcoinPriceAlert(lowerBound, upperBound)
+                    .then((alertMessage) => {
+                        message.channel.send(alertMessage);
+                    })
+                    .catch((error) => {
+                        message.channel.send(error);
+                    });
+            }
+        }
+        else if (message.content === '!bitcoin alert') {
+            message.channel.send("Please add boundary prices for alert.");
         }
         
         else if (message.content.startsWith('!bitcoin ')) {

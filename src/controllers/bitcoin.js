@@ -11,10 +11,14 @@ async function getBitcoinPrice() {
     try {
         const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=eur,usd');
         const data = await response.json();
-        return {
-            eur: data.bitcoin.eur,
-            usd: data.bitcoin.usd
-        };
+        if (data && data.bitcoin && data.bitcoin.eur && data.bitcoin.usd) {
+            return {
+                eur: data.bitcoin.eur,
+                usd: data.bitcoin.usd
+            };
+        } else {
+            throw new FetchError("Data format is incorrect");
+        }
     } catch (error) {
         console.error("Error fetching Bitcoin price:", error);
         throw new FetchError(FETCH_ERROR);
@@ -77,8 +81,36 @@ async function generateQuickChartUrl(labels, data, number_of_days, currency = 'u
     return `https://quickchart.io/chart?c=${encodedConfig}`;
 }
 
+let lastPrice = null;
+
+function startBitcoinPriceAlert(lowerBound, upperBound) {
+    return new Promise((resolve, reject) => {
+        console.log('Bitcoin price detecting started');
+
+        setInterval(async () => {
+            try {
+                const currentPrice = await getBitcoinPrice();
+
+                if (lastPrice && lastPrice.eur === currentPrice.eur) {
+                    resolve('No price change');
+                } else if (currentPrice.eur <= lowerBound || currentPrice.eur >= upperBound) {
+                    resolve(`Price has been changed! Current price is ${currentPrice.eur} EUR`);
+                }
+
+                lastPrice = currentPrice;
+            } catch (error) {
+                console.error('Error fetching Bitcoin price:', error);
+                reject('Error fetching Bitcoin price');
+            }
+        }, 10000);
+    });
+}
+
+
+
 module.exports = {
     getBitcoinPrice,
     fetchBitcoinPastValues,
     generateQuickChartUrl,
+    startBitcoinPriceAlert
 };
