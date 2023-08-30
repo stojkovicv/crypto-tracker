@@ -1,5 +1,6 @@
 const { FetchError } = require('../errors'); 
 const { FETCH_ERROR } = require('../utils/errorMessages');
+const alertEmitter = require('../../AlertEmitter');
 
 
 let fetch;
@@ -15,6 +16,23 @@ async function getBitcoinPrice() {
             return {
                 eur: data.bitcoin.eur,
                 usd: data.bitcoin.usd
+            };
+        } else {
+            throw new FetchError("Data format is incorrect");
+        }
+    } catch (error) {
+        console.error("Error fetching Bitcoin price:", error);
+        throw new FetchError(FETCH_ERROR);
+    }
+}
+
+async function getBitcoinPriceInEUR() {
+    try {
+        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=eur');
+        const data = await response.json();
+        if (data && data.bitcoin && data.bitcoin.eur) {
+            return {
+                eur: data.bitcoin.eur
             };
         } else {
             throw new FetchError("Data format is incorrect");
@@ -83,30 +101,30 @@ async function generateQuickChartUrl(labels, data, number_of_days, currency = 'u
 
 let lastPrice = null;
 
-function startBitcoinPriceAlert(lowerBound, upperBound) {
-    return new Promise((resolve, reject) => {
-        console.log('Bitcoin price detecting started');
+function startBitcoinPriceAlert(lowerBound, upperBound){
+    console.log('Bitcoin price detecting started');
 
-        setInterval(async () => {
-            try {
-                const currentPrice = await getBitcoinPrice();
+    setInterval(async () => {
+        try {
+            const currentPrice = await getBitcoinPriceInEUR();
+            console.log('Fetched new price:', currentPrice);
 
-                if (lastPrice && lastPrice.eur === currentPrice.eur) {
-                    resolve('No price change');
-                } else if (currentPrice.eur <= lowerBound || currentPrice.eur >= upperBound) {
-                    resolve(`Price has been changed! Current price is ${currentPrice.eur} EUR`);
-                }
-
-                lastPrice = currentPrice;
-            } catch (error) {
-                console.error('Error fetching Bitcoin price:', error);
-                reject('Error fetching Bitcoin price');
+            if (lastPrice && lastPrice.eur === currentPrice.eur) {
+                console.log('Emitting noChange event');
+                alertEmitter.emit('noChange');
+            } else if (currentPrice.eur <= lowerBound || currentPrice.eur >= upperBound) {
+                console.log('Emitting priceChange event');
+                alertEmitter.emit('priceChange', currentPrice.eur);
             }
-        }, 10000);
-    });
+            
+            lastPrice = currentPrice;
+        } catch (error) {
+            console.log('Emitting fetchError event');
+            console.error('Error fetching Bitcoin price:', error);
+            alertEmitter.emit('fetchError');
+        }
+    }, 15000);
 }
-
-
 
 module.exports = {
     getBitcoinPrice,

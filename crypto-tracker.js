@@ -3,7 +3,7 @@ const {Client, Events, GatewayIntentBits} = require('discord.js');
 const { getBitcoinPrice, fetchBitcoinPastValues, generateQuickChartUrl, startBitcoinPriceAlert } = require('./src/controllers/bitcoin');
 const { getEthereumPrice, fetchEthereumPastValues, generateQuickChartUrlEthereum } = require('./src/controllers/ethereum');
 const { FetchError, InvalidDaysError, UnrecognizedCommandError, MessageOverflow } = require('./src/errors/Errors');
-
+const alertEmitter = require('./AlertEmitter');
 
 let fetch;
 import('node-fetch').then(module => {
@@ -101,6 +101,30 @@ function validateEthereumMessage(message) {
     return splitMessage;
 }
 
+let lastChannel = null;
+
+alertEmitter.on('noChange', () => {
+    console.log('Last channel:', lastChannel);
+    if (lastChannel) {
+        lastChannel.send('No price change');
+    }
+});
+
+
+
+alertEmitter.on('priceChange', (currentPrice) => {
+    console.log('priceChange event emitted');
+    if (lastChannel) {
+        lastChannel.send(`Price has been changed! Current price is ${currentPrice} EUR`);
+    }
+});
+
+alertEmitter.on('fetchError', () => {
+    console.log('fetchError event emitted');
+    if (lastChannel) {
+        lastChannel.send('Error fetching Bitcoin price');
+    }
+});
 
 client.on('messageCreate', async message => {
 
@@ -121,17 +145,14 @@ client.on('messageCreate', async message => {
             const lowerBound = parseFloat(splitMessage[2]);
             const upperBound = parseFloat(splitMessage[3]);
             if (lowerBound && upperBound) {
+                lastChannel = message.channel;
+                console.log('Last channel set:', lastChannel);
                 message.channel.send('Bitcoin price detecting started');
-        
-                startBitcoinPriceAlert(lowerBound, upperBound)
-                    .then((alertMessage) => {
-                        message.channel.send(alertMessage);
-                    })
-                    .catch((error) => {
-                        message.channel.send(error);
-                    });
+                startBitcoinPriceAlert(lowerBound, upperBound);
             }
         }
+        
+        
         else if (message.content === '!bitcoin alert') {
             message.channel.send("Please add boundary prices for alert.");
         }
@@ -177,7 +198,9 @@ client.on('messageCreate', async message => {
             message.channel.send('An unexpected error occurred.');
         }
     }
+
 });
+
 
 module.exports = {
     validateBitcoinMessage,
