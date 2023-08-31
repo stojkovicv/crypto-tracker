@@ -1,6 +1,6 @@
 # Crypto Values Tracking Discord bot
 
-This project represents independetly driven work around Discord services to fetch a latest data about most valuable crypto currencies BTC and ETH. It also provides few analytical functionalities to achieve better insight of the past values and their flow.
+This project represents independetly driven work around Discord services to fetch latest information about most valuable crypto currencies - BTC and ETH. It provides few analytical functionalities to achieve better insight of the past values and their flow.
 
 # Initialize Discord server
 
