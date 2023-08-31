@@ -12,7 +12,7 @@ For running the unit test:
 ```
 npx jest --clearCache
 npx jest
-``
+```
 
 # Message prompts
 In order to get precise data from the bot, you have to use very specific format of messages. Here is the main list of prompts and explanation on what they're going to response:
