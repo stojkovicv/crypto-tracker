@@ -3,6 +3,16 @@ const {Client, Events, GatewayIntentBits} = require('discord.js');
 const { getBitcoinPrice, fetchBitcoinPastValues, generateQuickChartUrl, startBitcoinPriceAlert } = require('./src/controllers/bitcoin');
 const { getEthereumPrice, fetchEthereumPastValues, generateQuickChartUrlEthereum } = require('./src/controllers/ethereum');
 const { FetchError, InvalidDaysError, UnrecognizedCommandError, MessageOverflow } = require('./src/errors/Errors');
+const {
+    FETCH_ERROR,
+    UNRECOGNIZED_COMMAND_ERROR,
+    INVALID_DAYS_ERROR,
+    INVALID_DAYS_ERROR_LESS_THAN_ONE,
+    INVALID_CURRENCY_PROVIDED,
+    MESSAGE_OVERFLOW,
+    BOUNDARY_PRICES_ALERT
+} = require('./src/utils/errorMessages');
+
 const alertEmitter = require('./AlertEmitter');
 
 let fetch;
@@ -31,8 +41,8 @@ if (process.env.NODE_ENV !== 'test') {
 }
 
 
+// crypto-tracker.js
 function validateBitcoinMessage(message) {
-
     const splitMessage = message.content.split(' ');
     const number_of_days = parseInt(splitMessage[1]);
     const validCurrencies = ['usd', 'eur', 'USD', 'EUR'];
@@ -42,34 +52,35 @@ function validateBitcoinMessage(message) {
         const upperBound = parseFloat(splitMessage[3]);
 
         if (isNaN(lowerBound) || isNaN(upperBound)) {
-            throw new UnrecognizedCommandError("Please add boundary prices for alert.");
+            throw new UnrecognizedCommandError(BOUNDARY_PRICES_ALERT);
         }
         
         return splitMessage;
     }
 
     if (!message.content.startsWith('!bitcoin ')) {
-        throw new UnrecognizedCommandError("Sorry, I don't recognize that command, try once again");
+        throw new UnrecognizedCommandError(UNRECOGNIZED_COMMAND_ERROR);
     }
 
     if (isNaN(number_of_days) || number_of_days > 30) {
-        throw new InvalidDaysError("Maximum insight of historical data is within range of 30 days");
+        throw new InvalidDaysError(INVALID_DAYS_ERROR);
     }
 
     if (number_of_days < 1) {
-        throw new InvalidDaysError("Please enter the valid number of previous days.");
+        throw new InvalidDaysError(INVALID_DAYS_ERROR_LESS_THAN_ONE);
     }
 
     if (splitMessage[2] && !validCurrencies.includes(splitMessage[2].toLowerCase())) {
-        throw new UnrecognizedCommandError("Invalid currency provided.");
+        throw new UnrecognizedCommandError(INVALID_CURRENCY_PROVIDED);
     }
 
     if (splitMessage.length > 3) {
-        throw new MessageOverflow("You have unnecessary elements in your prompt. Try again!");
+        throw new MessageOverflow(MESSAGE_OVERFLOW);
     }
 
     return splitMessage;
 }
+
 
 
 function validateEthereumMessage(message) {

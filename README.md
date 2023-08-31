@@ -7,6 +7,12 @@ This project represents independetly driven work around Discord services to fetc
 # Run the program
 
 # Unit test
+Since there are many potential issues and wrong commands on which bot has to correspond accordingly, the unit test is written to test the code by mocking various messages, checking and proving if the implementation is working correctly. Be aware of dependencies needed for this test to run.
+For running the unit test:
+```
+npx jest --clearCache
+npx jest
+``
 
 # Message prompts
 In order to get precise data from the bot, you have to use very specific format of messages. Here is the main list of prompts and explanation on what they're going to response:
