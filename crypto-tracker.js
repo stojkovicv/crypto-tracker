@@ -90,23 +90,23 @@ function validateEthereumMessage(message) {
     const validCurrencies = ['usd', 'eur', 'USD', 'EUR'];
 
     if (!message.content.startsWith('!ethereum ')) {
-        throw new UnrecognizedCommandError("Sorry, I don't recognize that command, try once again");
+        throw new UnrecognizedCommandError(UNRECOGNIZED_COMMAND_ERROR);
     }
 
     if (isNaN(number_of_days) || number_of_days > 30) {
-        throw new InvalidDaysError("Maximum insight of historical data is within range of 30 days");
+        throw new InvalidDaysError(INVALID_DAYS_ERROR);
     }
 
     if (number_of_days < 1) {
-        throw new InvalidDaysError("Please enter the valid number of previous days.");
+        throw new InvalidDaysError(INVALID_DAYS_ERROR_LESS_THAN_ONE);
     }
 
     if (splitMessage[2] && !validCurrencies.includes(splitMessage[2].toLowerCase())) {
-        throw new UnrecognizedCommandError("Invalid currency provided.");
+        throw new UnrecognizedCommandError(INVALID_CURRENCY_PROVIDED);
     }
 
     if (splitMessage.length > 3) {
-        throw new MessageOverflow("You have unnecessary elements in your prompt. Try again!");
+        throw new MessageOverflow(MESSAGE_OVERFLOW);
     }
 
     return splitMessage;
@@ -115,23 +115,22 @@ function validateEthereumMessage(message) {
 let lastChannel = null;
 
 alertEmitter.on('noChange', () => {
-    console.log('Last channel:', lastChannel);
+    //console.log('Last channel:', lastChannel);
     if (lastChannel) {
         lastChannel.send('No price change');
     }
 });
 
 
-
 alertEmitter.on('priceChange', (currentPrice) => {
-    console.log('priceChange event emitted');
+    //console.log('priceChange event emitted');
     if (lastChannel) {
         lastChannel.send(`Price has been changed! Current price is ${currentPrice} EUR`);
     }
 });
 
 alertEmitter.on('fetchError', () => {
-    console.log('fetchError event emitted');
+    //console.log('fetchError event emitted');
     if (lastChannel) {
         lastChannel.send('Error fetching Bitcoin price');
     }
@@ -157,8 +156,8 @@ client.on('messageCreate', async message => {
             const upperBound = parseFloat(splitMessage[3]);
             if (lowerBound && upperBound) {
                 lastChannel = message.channel;
-                console.log('Last channel set:', lastChannel);
-                message.channel.send('Bitcoin price detecting started');
+                //console.log('Last channel set:', lastChannel);
+                message.channel.send('Bitcoin price detecting started!');
                 startBitcoinPriceAlert(lowerBound, upperBound);
             }
         }

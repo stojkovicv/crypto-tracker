@@ -102,28 +102,28 @@ async function generateQuickChartUrl(labels, data, number_of_days, currency = 'u
 let lastPrice = null;
 
 function startBitcoinPriceAlert(lowerBound, upperBound){
-    console.log('Bitcoin price detecting started');
+    console.log('Bitcoin price detecting started: ');
 
     setInterval(async () => {
         try {
             const currentPrice = await getBitcoinPriceInEUR();
-            console.log('Fetched new price:', currentPrice);
+            //console.log('Fetched new price:', currentPrice);
 
             if (lastPrice && lastPrice.eur === currentPrice.eur) {
-                console.log('Emitting noChange event');
+                //console.log('Emitting noChange event');
                 alertEmitter.emit('noChange');
             } else if (currentPrice.eur <= lowerBound || currentPrice.eur >= upperBound) {
-                console.log('Emitting priceChange event');
+                //console.log('Emitting priceChange event');
                 alertEmitter.emit('priceChange', currentPrice.eur);
             }
             
             lastPrice = currentPrice;
         } catch (error) {
-            console.log('Emitting fetchError event');
-            console.error('Error fetching Bitcoin price:', error);
+            //console.log('Emitting fetchError event');
+            //console.error('Error fetching Bitcoin price:', error);
             alertEmitter.emit('fetchError');
         }
-    }, 15000);
+    }, 5000); // setted by default to 5 seconds (5000 ms)
 }
 
 module.exports = {
