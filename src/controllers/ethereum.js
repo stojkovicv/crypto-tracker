@@ -1,5 +1,6 @@
 const { FetchError } = require('../errors');
 const { FETCH_ERROR } = require('../utils/errorMessages'); 
+const alertEmitter = require('../../AlertEmitter');
 
 
 let fetch;
@@ -12,17 +13,37 @@ async function getEthereumPrice(){
     try{
         const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=eur,usd');
         const data = await response.json();
-        console.log(data); 
-        console.log("Fetched Ethereum price:", data.ethereum.eur);
-        return {
-            eur: data.ethereum.eur,
-            usd: data.ethereum.usd
-        };
+        if (data && data.ethereum && data.ethereum.eur && data.ethereum.usd) {
+            return {
+                eur: data.ethereum.eur,
+                usd: data.ethereum.usd
+            };
+        } else {
+            throw new FetchError("Data format is incorrect");
+        }
     } catch (error) {
         console.error("Error fetching Ethereum price:", error);
         throw new FetchError(FETCH_ERROR);
     }
 }
+
+async function getEthereumPriceInEUR(){
+    try{
+        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=eur');
+        const data =  await response.json();
+        if (data && data.ethereum && data.ethereum.eur) {
+            return {
+                eur: data.ethereum.eur
+            };
+        } else {
+            throw new FetchError("Data format is incorrect");
+        }
+    }
+        catch (error) {
+            console.error("Error fetching Bitcoin price:", error);
+            throw new FetchError(FETCH_ERROR);
+        }
+    }
 
 async function fetchEthereumPastValues(number_of_days, currency = 'usd'){
     try{
@@ -80,8 +101,31 @@ async function generateQuickChartUrlEthereum(labels, data, number_of_days, curre
     return `https://quickchart.io/chart?c=${encodedConfig}`;
 }
 
+let lastPrice = null;
+
+function startEthereumPriceAlert(lowerBound, upperBound){
+    console.log('Ethereum price detecting started: ');
+
+    setInterval(async () => {
+        try {
+            const currentPrice = await getEthereumPriceInEUR();
+
+            if (lastPrice && lastPrice.eur === currentPrice.eur) {
+                alertEmitter.emit('noChange');
+            } else if (currentPrice.eur <= lowerBound || currentPrice.eur >= upperBound) {
+                alertEmitter.emit('priceChange', currentPrice.eur);
+            }
+            
+            lastPrice = currentPrice;
+        } catch (error) {
+            alertEmitter.emit('fetchError');
+        }
+    }, 5000);
+}
+
 module.exports = {
     getEthereumPrice,
     fetchEthereumPastValues,
     generateQuickChartUrlEthereum,
+    startEthereumPriceAlert
 };
