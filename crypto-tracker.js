@@ -19,6 +19,7 @@ let lastChannel = null;
 let alertIntervalId = null;
 let fetch;
 
+
 import('node-fetch').then(module => {
     fetch = module.default;
 });
@@ -123,6 +124,45 @@ function validateEthereumMessage(message) {
     return splitMessage;
 }
 
+async function fetchNews() {
+    const url = 'https://api.currentsapi.services/v1/latest-news?' + 'language=en&' + 'apiKey=' + process.env.NEWS_TOKEN;
+    let newsMessages = [];
+    let currentMessage = 'Here are the top 10 latest news:\n';
+  
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+  
+      if (data.status === 'ok') {
+        const newsArray = data.news.slice(0, 10); // Limit to 10 news items
+  
+        for (let i = 0; i < newsArray.length; i++) {
+          const newsItem = newsArray[i];
+          const line = `**${i + 1}. ${newsItem.title}**\n[Read more](${newsItem.url})\n`;
+  
+          if ((currentMessage.length + line.length) > 2000) {
+            newsMessages.push(currentMessage);
+            currentMessage = '';
+          }
+  
+          currentMessage += line;
+        }
+  
+        if (currentMessage) {
+          newsMessages.push(currentMessage);
+        }
+      } else {
+        newsMessages.push('Failed to fetch news.');
+      }
+    } catch (error) {
+      console.error('Error fetching news:', error);
+      newsMessages.push('An error occurred while fetching news.');
+    }
+  
+    return newsMessages;
+}
+
+  
 alertEmitter.on('noChange', () => {
     //console.log('Last channel:', lastChannel);
     if (lastChannel) {
@@ -184,7 +224,7 @@ client.on('messageCreate', async message => {
                 alertIntervalId = startEthereumPriceAlert(lowerBound, upperBound);
             }
         }
-        
+
         else if (message.content === '!ethereum alert') {
             message.channel.send("Please add boundary prices for alert.");
         }
@@ -226,6 +266,13 @@ client.on('messageCreate', async message => {
             const prices = await getEthereumPrice();
             message.channel.send(`The current price of Ethereum is €${prices.eur} which is $${prices.usd} USD.`);
         }
+
+        else if (message.content === '!news') {
+            const newsMessages = await fetchNews();
+            for(const newsMessage of newsMessages){
+                message.channel.send(newsMessage);
+            }
+        }         
         
         else {
             message.channel.send("Sorry, I don't recognize that command, try once again");
