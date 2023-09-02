@@ -104,7 +104,7 @@ let lastPrice = null;
 function startBitcoinPriceAlert(lowerBound, upperBound){
     console.log('Bitcoin price detecting started: ');
 
-    setInterval(async () => {
+    const intervalId = setInterval(async () => {
         try {
             const currentPrice = await getBitcoinPriceInEUR();
             //console.log('Fetched new price:', currentPrice);
@@ -124,6 +124,8 @@ function startBitcoinPriceAlert(lowerBound, upperBound){
             alertEmitter.emit('fetchError');
         }
     }, 5000); // setted by default to 5 seconds (5000 ms)
+
+    return intervalId;
 }
 
 module.exports = {

@@ -106,7 +106,7 @@ let lastPrice = null;
 function startEthereumPriceAlert(lowerBound, upperBound){
     console.log('Ethereum price detecting started: ');
 
-    setInterval(async () => {
+    const intervalId = setInterval(async () => {
         try {
             const currentPrice = await getEthereumPriceInEUR();
 
@@ -121,6 +121,8 @@ function startEthereumPriceAlert(lowerBound, upperBound){
             alertEmitter.emit('fetchError');
         }
     }, 5000);
+
+    return intervalId;
 }
 
 module.exports = {

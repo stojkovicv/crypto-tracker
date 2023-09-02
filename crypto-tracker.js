@@ -15,7 +15,10 @@ const {
 
 const alertEmitter = require('./AlertEmitter');
 
+let lastChannel = null;
+let alertIntervalId = null;
 let fetch;
+
 import('node-fetch').then(module => {
     fetch = module.default;
 });
@@ -81,7 +84,6 @@ function validateBitcoinMessage(message) {
     return splitMessage;
 }
 
-
 function validateEthereumMessage(message) {
 
     const splitMessage = message.content.split(' ');
@@ -120,8 +122,6 @@ function validateEthereumMessage(message) {
 
     return splitMessage;
 }
-
-let lastChannel = null;
 
 alertEmitter.on('noChange', () => {
     //console.log('Last channel:', lastChannel);
@@ -165,8 +165,8 @@ client.on('messageCreate', async message => {
             if (lowerBound && upperBound) {
                 lastChannel = message.channel;
                 //console.log('Last channel set:', lastChannel);
-                message.channel.send('Bitcoin price detecting started!');
-                startBitcoinPriceAlert(lowerBound, upperBound);
+                message.channel.send('Bitcoin price detecting started...');
+                alertIntervalId = startBitcoinPriceAlert(lowerBound, upperBound); 
             }
         }
         
@@ -181,12 +181,21 @@ client.on('messageCreate', async message => {
             if (lowerBound && upperBound) {
                 lastChannel = message.channel;
                 message.channel.send('Ethereum price detecting started!');
-                startEthereumPriceAlert(lowerBound, upperBound);
+                alertIntervalId = startEthereumPriceAlert(lowerBound, upperBound);
             }
         }
         
         else if (message.content === '!ethereum alert') {
             message.channel.send("Please add boundary prices for alert.");
+        }
+
+        else if (message.content === 'stop alerts') {
+            if (alertIntervalId) {
+                clearInterval(alertIntervalId);
+                message.channel.send('Stopped price alerts.');
+            } else {
+                message.channel.send('No active price alerts to stop.');
+            }
         }
       
         else if (message.content.startsWith('!bitcoin ')) {
