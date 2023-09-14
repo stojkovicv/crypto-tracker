@@ -20,7 +20,7 @@ In order to get precise data from the bot, you have to use very specific format 
 ## Run the program
 
 ## Fetching news API
-Lot of news fetchers are coming with pricing, and since this idea is not what we want here - I found perfect news API at [RapidApi](https://rapidapi.com/hub) Hub. It's perfect place which gathers various APIs, and all you have to do is to register, subscribe for free licence and get you API key at your Developer space.
+Lot of news fetchers are coming with pricing, and since this idea is not what we want here - I found perfect news API at [RapidApi](https://rapidapi.com/hub) Hub. It's perfect place which gathers various APIs, and all you have to do is to register, subscribe for free licence and get you API key at your Developer space. The one that is utilized here for both crypto currencies is using `axios` and can be accessed, for more details, on its realted [page](https://rapidapi.com/Oliviervha/api/crypto-news11/).
 
 ## Unit test
 Since there are many potential issues and wrong commands on which bot must to correspond accordingly, the unit test is written to test the code by mocking various messages, checking and proving if the implementation is working correctly. Be aware of dependencies needed for this test to run.
