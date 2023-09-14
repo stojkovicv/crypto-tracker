@@ -12,7 +12,7 @@ const {
     MESSAGE_OVERFLOW,
     BOUNDARY_PRICES_ALERT
 } = require('./src/utils/errorMessages');
-
+const axios = require('axios');
 const alertEmitter = require('./AlertEmitter');
 
 let lastChannel = null;
@@ -125,40 +125,50 @@ function validateEthereumMessage(message) {
 }
 
 async function fetchNews() {
-    const url = 'https://api.currentsapi.services/v1/latest-news?' + 'language=en&' + 'apiKey=' + process.env.NEWS_TOKEN;
+    const options = {
+        method: 'GET',
+        url: 'https://crypto-news11.p.rapidapi.com/cryptonews/bitcoin',
+        params: {
+            max_articles: '10',
+            last_n_hours: '48',
+            top_n_keywords: '10'
+        },
+        headers: {
+            'X-RapidAPI-Key': process.env.RAPIDAPI_KEY,
+            'X-RapidAPI-Host': 'crypto-news11.p.rapidapi.com'
+        }
+    };
+    
     let newsMessages = [];
     let currentMessage = 'Here are the top 10 latest news:\n';
-  
+    
     try {
-      const response = await fetch(url);
-      const data = await response.json();
-  
-      if (data.status === 'ok') {
-        const newsArray = data.news.slice(0, 10); // Limit to 10 news items
-  
-        for (let i = 0; i < newsArray.length; i++) {
-          const newsItem = newsArray[i];
-          const line = `**${i + 1}. ${newsItem.title}**\n[Read more](${newsItem.url})\n`;
-  
-          if ((currentMessage.length + line.length) > 2000) {
-            newsMessages.push(currentMessage);
-            currentMessage = '';
-          }
-  
-          currentMessage += line;
+        const response = await axios.request(options);
+        const data = response.data;
+        if(data.articles){
+            const newsArray = data.articles.slice(0, 10);
+        
+            for (let i = 0; i < newsArray.length; i++) {
+                const newsItem = newsArray[i];
+                const line = `**${i + 1}. ${newsItem.title}**\n[Read more](${newsItem.url})\n`;
+
+                if ((currentMessage.length + line.length) > 2000) {
+                    newsMessages.push(currentMessage);
+                    currentMessage = '';
+                }
+
+                currentMessage += line;
+            }
+            if (currentMessage) {
+                newsMessages.push(currentMessage);
+            }
+        }else {
+            newsMessages.push('Failed to fetch the news.')
         }
-  
-        if (currentMessage) {
-          newsMessages.push(currentMessage);
-        }
-      } else {
-        newsMessages.push('Failed to fetch news.');
-      }
     } catch (error) {
-      console.error('Error fetching news:', error);
-      newsMessages.push('An error occurred while fetching news.');
+        console.error('Error fetching news:', error);
+        newsMessages.push('An error occurred while fetching news.');
     }
-  
     return newsMessages;
 }
 
@@ -272,7 +282,8 @@ client.on('messageCreate', async message => {
             for(const newsMessage of newsMessages){
                 message.channel.send(newsMessage);
             }
-        }         
+        }
+           
         
         else {
             message.channel.send("Sorry, I don't recognize that command, try once again");
