@@ -127,7 +127,7 @@ function validateEthereumMessage(message) {
 async function fetchNews() {
     const options = {
         method: 'GET',
-        url: 'https://crypto-news11.p.rapidapi.com/cryptonews/bitcoin',
+        url: 'https://crypto-news11.p.rapidapi.com/cryptonews/ethereum',
         params: {
             max_articles: '10',
             last_n_hours: '48',
@@ -150,7 +150,7 @@ async function fetchNews() {
         
             for (let i = 0; i < newsArray.length; i++) {
                 const newsItem = newsArray[i];
-                const line = `**${i + 1}. ${newsItem.title}**\n[Read more](${newsItem.url})\n`;
+                const line = `**${i + 1}. ${newsItem.title}**\n[Read more](<${newsItem.url}>)\n`;
 
                 if ((currentMessage.length + line.length) > 2000) {
                     newsMessages.push(currentMessage);
