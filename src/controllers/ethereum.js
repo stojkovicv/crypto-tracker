@@ -1,6 +1,7 @@
 const { FetchError } = require('../errors');
 const { FETCH_ERROR } = require('../utils/errorMessages'); 
 const alertEmitter = require('../../AlertEmitter');
+const axios = require('axios');
 
 
 let fetch;
@@ -125,9 +126,58 @@ function startEthereumPriceAlert(lowerBound, upperBound){
     return intervalId;
 }
 
+async function fetchEthereumNews() {
+    const options = {
+        method: 'GET',
+        url: 'https://crypto-news11.p.rapidapi.com/cryptonews/ethereum', // Change endpoint to Ethereum
+        params: {
+            max_articles: '10',
+            last_n_hours: '48',
+            top_n_keywords: '10'
+        },
+        headers: {
+            'X-RapidAPI-Key': process.env.RAPIDAPI_KEY,
+            'X-RapidAPI-Host': 'crypto-news11.p.rapidapi.com'
+        }
+    };
+    
+    let newsMessages = [];
+    let currentMessage = 'Here are the top 10 latest Ethereum news:\n'; // Change message to Ethereum
+    
+    try {
+        const response = await axios.request(options);
+        const data = response.data;
+        if(data.articles){
+            const newsArray = data.articles.slice(0, 10);
+        
+            for (let i = 0; i < newsArray.length; i++) {
+                const newsItem = newsArray[i];
+                const line = `**${i + 1}. ${newsItem.title}**\n[Read more](<${newsItem.url}>)\n`;
+
+                if ((currentMessage.length + line.length) > 2000) {
+                    newsMessages.push(currentMessage);
+                    currentMessage = '';
+                }
+
+                currentMessage += line;
+            }
+            if (currentMessage) {
+                newsMessages.push(currentMessage);
+            }
+        }else {
+            newsMessages.push('Failed to fetch the news.')
+        }
+    } catch (error) {
+        console.error('Error fetching news:', error);
+        newsMessages.push('An error occurred while fetching news.');
+    }
+    return newsMessages;
+}
+
 module.exports = {
     getEthereumPrice,
     fetchEthereumPastValues,
     generateQuickChartUrlEthereum,
-    startEthereumPriceAlert
+    startEthereumPriceAlert,
+    fetchEthereumNews
 };

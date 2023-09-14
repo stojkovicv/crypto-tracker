@@ -1,7 +1,7 @@
 
 const {Client, Events, GatewayIntentBits} = require('discord.js');
-const { getBitcoinPrice, fetchBitcoinPastValues, generateQuickChartUrl, startBitcoinPriceAlert } = require('./src/controllers/bitcoin');
-const { getEthereumPrice, fetchEthereumPastValues, generateQuickChartUrlEthereum, startEthereumPriceAlert } = require('./src/controllers/ethereum');
+const { getBitcoinPrice, fetchBitcoinPastValues, generateQuickChartUrl, startBitcoinPriceAlert, fetchBitcoinNews } = require('./src/controllers/bitcoin');
+const { getEthereumPrice, fetchEthereumPastValues, generateQuickChartUrlEthereum, startEthereumPriceAlert, fetchEthereumNews } = require('./src/controllers/ethereum');
 const { FetchError, InvalidDaysError, UnrecognizedCommandError, MessageOverflow } = require('./src/errors/Errors');
 const {
     FETCH_ERROR,
@@ -123,55 +123,6 @@ function validateEthereumMessage(message) {
 
     return splitMessage;
 }
-
-async function fetchNews() {
-    const options = {
-        method: 'GET',
-        url: 'https://crypto-news11.p.rapidapi.com/cryptonews/ethereum',
-        params: {
-            max_articles: '10',
-            last_n_hours: '48',
-            top_n_keywords: '10'
-        },
-        headers: {
-            'X-RapidAPI-Key': process.env.RAPIDAPI_KEY,
-            'X-RapidAPI-Host': 'crypto-news11.p.rapidapi.com'
-        }
-    };
-    
-    let newsMessages = [];
-    let currentMessage = 'Here are the top 10 latest news:\n';
-    
-    try {
-        const response = await axios.request(options);
-        const data = response.data;
-        if(data.articles){
-            const newsArray = data.articles.slice(0, 10);
-        
-            for (let i = 0; i < newsArray.length; i++) {
-                const newsItem = newsArray[i];
-                const line = `**${i + 1}. ${newsItem.title}**\n[Read more](<${newsItem.url}>)\n`;
-
-                if ((currentMessage.length + line.length) > 2000) {
-                    newsMessages.push(currentMessage);
-                    currentMessage = '';
-                }
-
-                currentMessage += line;
-            }
-            if (currentMessage) {
-                newsMessages.push(currentMessage);
-            }
-        }else {
-            newsMessages.push('Failed to fetch the news.')
-        }
-    } catch (error) {
-        console.error('Error fetching news:', error);
-        newsMessages.push('An error occurred while fetching news.');
-    }
-    return newsMessages;
-}
-
   
 alertEmitter.on('noChange', () => {
     //console.log('Last channel:', lastChannel);
@@ -203,7 +154,22 @@ client.on('messageCreate', async message => {
     if (message.author.bot) return;
 
     try {
-        if (message.content === '!bitcoin') {
+
+        if (message.content === '!bitcoin news') {
+            const newsMessages = await fetchBitcoinNews();
+            for(const newsMessage of newsMessages){
+                message.channel.send(newsMessage);
+            }
+        } 
+        
+        else if (message.content ==='!ethereum news') {
+            const newsMessages = await fetchEthereumNews();
+            for(const newsMessage of newsMessages){
+                message.channel.send(newsMessage);
+            }
+        }
+
+        else if (message.content === '!bitcoin') {
             const prices = await getBitcoinPrice();
             message.channel.send(`The current price of Bitcoin is €${prices.eur} which is $${prices.usd} USD.`);
         }
@@ -276,14 +242,6 @@ client.on('messageCreate', async message => {
             const prices = await getEthereumPrice();
             message.channel.send(`The current price of Ethereum is €${prices.eur} which is $${prices.usd} USD.`);
         }
-
-        else if (message.content === '!news') {
-            const newsMessages = await fetchNews();
-            for(const newsMessage of newsMessages){
-                message.channel.send(newsMessage);
-            }
-        }
-           
         
         else {
             message.channel.send("Sorry, I don't recognize that command, try once again");
