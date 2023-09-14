@@ -1,7 +1,7 @@
 # Crypto Values Tracking Discord bot
 This (side) project represents independetly driven work around Discord services to fetch latest information about most valuable crypto currencies - BTC and ETH. It provides few analytical functionalities to achieve better insight of the past crypto values, their flow and overall information through news.
 
-# Message prompts
+## Message prompts
 In order to get precise data from the bot, you have to use very specific format of messages. Here is the main list of prompts and explanation on what they're going to response:
 
 | Message Command | Description |
@@ -15,9 +15,9 @@ In order to get precise data from the bot, you have to use very specific format 
 |`!bitcoin news`|Displays titles with links to latest 10 news for Bitcoin.|
 |`!ethereum news`|Displays titles with links to latest 10 news for Ethereum.|
 
-# Initialize Discord server
+## Initialize Discord server
 
-# Run the program
+## Run the program
 
 ## Fetching news API
 Lot of news fetchers are coming with pricing, and since this idea is not what we want here - I found perfect news API at [RapidApi](https://rapidapi.com/hub) Hub. It's perfect place which gathers various APIs, and all you have to do is to register, subscribe for free licence and get you API key at your Developer space.
