@@ -15,6 +15,8 @@ In order to get precise data from the bot, you have to use very specific format 
 |`!bitcoin news`|Displays titles with links to latest 10 news for Bitcoin.|
 |`!ethereum news`|Displays titles with links to latest 10 news for Ethereum.|
 
+![Alt text](https://user-images.githubusercontent.com/71947247/268233294-aee39799-c60c-4d39-8a4a-717705579173.png)
+
 ## Initialize Discord server
 This bot project is not hosted at any of virtual machines of cloud providers. What you can do in order to run it is to follow the simple guide on how to create you own bot at Discord, generate URL and basically activate it on your own server. Then you have to use specific Discord API key in order to establish the connection between bot and Discord. Once the bot is running, you can test it and use it directly within your server. I am currently looking into various options on publishing it for wider Discord community.
 
