@@ -12,6 +12,7 @@ In order to get precise data from the bot, you have to use very specific format 
 | `!ethereum [days] [currency]` | Retrieves the graphical representation of Ethereum values for the specified number of past days in the given currency. The currency flag is optional, and default one is USD.|
 | `!bitcoin alert [lower_bound][upper_bound]` | Starts price detecting in specified range for BTC, sending alerts on every 5 seconds about value changes.|
 | `!ethereum alert [lower_bound][upper_bound]` | Starts price detecting in specified range for ETH, sending alerts on every 5 seconds about value changes.|
+| `stop alerts` | Halts alerts mechanism |
 |`!bitcoin news`|Displays titles with links to latest 10 news for Bitcoin.|
 |`!ethereum news`|Displays titles with links to latest 10 news for Ethereum.|
 
