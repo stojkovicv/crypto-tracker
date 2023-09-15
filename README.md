@@ -16,8 +16,10 @@ In order to get precise data from the bot, you have to use very specific format 
 |`!ethereum news`|Displays titles with links to latest 10 news for Ethereum.|
 
 ## Initialize Discord server
+This bot project is not hosted at any of virtual machines of cloud providers. What you can do in order to run it is to follow the simple guide on how to create you own bot at Discord, generate URL and basically activate it on your own server. Then you have to use specific Discord API key in order to establish the connection between bot and Discord. Once the bot is running, you can test it and use it directly within your server. I am currently looking into various options on publishing it for wider Discord community.
 
 ## Run the program
+Typically, you will run the JS program with `npm install` and `nodejs crypto-tracker.js`, however if you're providing changes, it's recommended to use `nodemon crypto-tracker.js` in order to track changes directly (hot reload). Please adapt your `package.json` accordingly.
 
 ## Fetching news API
 Lot of news fetchers are coming with pricing, and since this idea is not what we want here - I found perfect news API at [RapidApi](https://rapidapi.com/hub) Hub. It's perfect place which gathers various APIs, and all you have to do is to register, subscribe for free licence and get you API key at your Developer space. The one that is utilized here for both crypto currencies is using `axios` and can be accessed, for more details, on its realted [page](https://rapidapi.com/Oliviervha/api/crypto-news11/).
